@@ -74,7 +74,7 @@ pub fn main() -> %void {
     };
     defer assert(SDL_RWclose(rw) == 0);
 
-    const zig_surface = c.SDL_LoadBMP_RW(rw, 1) ?? {
+    const zig_surface = c.SDL_LoadBMP_RW(rw, 0) ?? {
         c.SDL_Log(c"Unable to load bmp: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
