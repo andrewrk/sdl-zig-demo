@@ -10,13 +10,7 @@ const assert = @import("std").debug.assert;
 // SDL_video.h:#define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 const SDL_WINDOWPOS_UNDEFINED = @bitCast(c_int, c.SDL_WINDOWPOS_UNDEFINED_MASK);
 
-// Zig does not support extern unions yet.
-// See https://github.com/zig-lang/zig/issues/144
-const SDL_Event = extern struct {
-    _type: c.Uint32,
-    _union: [56]u8,
-};
-extern fn SDL_PollEvent(event: &SDL_Event) -> c_int;
+extern fn SDL_PollEvent(event: &c.SDL_Event) c_int;
 
 // SDL_RWclose is fundamentally unrepresentable in Zig, because `ctx` is
 // evaluated twice. One could make the case that this is a bug in SDL,
@@ -26,7 +20,7 @@ extern fn SDL_PollEvent(event: &SDL_Event) -> c_int;
 // it would resolve the SDL bug as well as make the function visible to Zig
 // and to debuggers.
 // SDL_rwops.h:#define SDL_RWclose(ctx)        (ctx)->close(ctx)
-inline fn SDL_RWclose(ctx: &c.SDL_RWops) -> c_int {
+inline fn SDL_RWclose(ctx: &c.SDL_RWops) c_int {
     const aligned_ctx = @alignCast(@alignOf(my_SDL_RWops), ctx);
     const casted_ctx = @ptrCast(&my_SDL_RWops, aligned_ctx);
     return casted_ctx.close(casted_ctx);
@@ -34,16 +28,14 @@ inline fn SDL_RWclose(ctx: &c.SDL_RWops) -> c_int {
 // Zig does not support extern unions yet.
 // See https://github.com/zig-lang/zig/issues/144
 const my_SDL_RWops = extern struct {
-    size: extern fn(),
-    seek: extern fn(),
-    read: extern fn(),
-    write: extern fn(),
-    close: extern fn(context: &my_SDL_RWops)->c_int,
+    size: extern fn()void,
+    seek: extern fn()void,
+    read: extern fn()void,
+    write: extern fn()void,
+    close: extern fn(context: &my_SDL_RWops)c_int,
 };
 
-error SDLInitializationFailed;
-
-pub fn main() -> %void {
+pub fn main() !void {
     if (c.SDL_Init(c.SDL_INIT_VIDEO) != 0) {
         c.SDL_Log(c"Unable to initialize SDL: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
@@ -68,7 +60,7 @@ pub fn main() -> %void {
     defer c.SDL_DestroyRenderer(renderer);
 
     const zig_bmp = @embedFile("zig.bmp");
-    const rw = c.SDL_RWFromConstMem(@ptrCast(&c_void, &zig_bmp[0]), c_int(zig_bmp.len)) ?? {
+    const rw = c.SDL_RWFromConstMem(@ptrCast(&const c_void, &zig_bmp[0]), c_int(zig_bmp.len)) ?? {
         c.SDL_Log(c"Unable to get RWFromConstMem: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
@@ -88,9 +80,9 @@ pub fn main() -> %void {
 
     var quit = false;
     while (!quit) {
-        var event: SDL_Event = undefined;
+        var event: c.SDL_Event = undefined;
         while (SDL_PollEvent(&event) != 0) {
-            switch (event._type) {
+            switch (event.@"type") {
                 c.SDL_QUIT => {
                     quit = true;
                 },
