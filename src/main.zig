@@ -21,19 +21,8 @@ extern fn SDL_PollEvent(event: &c.SDL_Event) c_int;
 // and to debuggers.
 // SDL_rwops.h:#define SDL_RWclose(ctx)        (ctx)->close(ctx)
 inline fn SDL_RWclose(ctx: &c.SDL_RWops) c_int {
-    const aligned_ctx = @alignCast(@alignOf(my_SDL_RWops), ctx);
-    const casted_ctx = @ptrCast(&my_SDL_RWops, aligned_ctx);
-    return casted_ctx.close(casted_ctx);
+    return (??ctx.close)(ctx);
 }
-// Zig does not support extern unions yet.
-// See https://github.com/zig-lang/zig/issues/144
-const my_SDL_RWops = extern struct {
-    size: extern fn()void,
-    seek: extern fn()void,
-    read: extern fn()void,
-    write: extern fn()void,
-    close: extern fn(context: &my_SDL_RWops)c_int,
-};
 
 pub fn main() !void {
     if (c.SDL_Init(c.SDL_INIT_VIDEO) != 0) {
