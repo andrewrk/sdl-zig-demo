@@ -10,7 +10,7 @@ const assert = @import("std").debug.assert;
 // SDL_video.h:#define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 const SDL_WINDOWPOS_UNDEFINED = @bitCast(c_int, c.SDL_WINDOWPOS_UNDEFINED_MASK);
 
-extern fn SDL_PollEvent(event: &c.SDL_Event) c_int;
+extern fn SDL_PollEvent(event: *c.SDL_Event) c_int;
 
 // SDL_RWclose is fundamentally unrepresentable in Zig, because `ctx` is
 // evaluated twice. One could make the case that this is a bug in SDL,
@@ -20,8 +20,8 @@ extern fn SDL_PollEvent(event: &c.SDL_Event) c_int;
 // it would resolve the SDL bug as well as make the function visible to Zig
 // and to debuggers.
 // SDL_rwops.h:#define SDL_RWclose(ctx)        (ctx)->close(ctx)
-inline fn SDL_RWclose(ctx: &c.SDL_RWops) c_int {
-    return (??ctx.close)(ctx);
+inline fn SDL_RWclose(ctx: [*]c.SDL_RWops) c_int {
+    return ctx[0].close.?(ctx);
 }
 
 pub fn main() !void {
@@ -49,7 +49,7 @@ pub fn main() !void {
     defer c.SDL_DestroyRenderer(renderer);
 
     const zig_bmp = @embedFile("zig.bmp");
-    const rw = c.SDL_RWFromConstMem(@ptrCast(&const c_void, &zig_bmp[0]), c_int(zig_bmp.len)) ?? {
+    const rw = c.SDL_RWFromConstMem(@ptrCast(*const c_void, &zig_bmp[0]), c_int(zig_bmp.len)) ?? {
         c.SDL_Log(c"Unable to get RWFromConstMem: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
