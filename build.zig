@@ -7,13 +7,11 @@ pub fn build(b: *Builder) void {
     exe.linkSystemLibrary("SDL2");
     exe.linkSystemLibrary("c");
 
-    b.default_step.dependOn(&exe.step);
-    b.installArtifact(exe);
+    exe.install();
 
+    const run_cmd = exe.run();
+    run_cmd.step.dependOn(b.getInstallStep());
 
-    const run = b.step("run", "Run the demo");
-    const run_cmd = b.addCommand(".", b.env_map,
-        [][]const u8{exe.getOutputPath(), });
-    run.dependOn(&run_cmd.step);
-    run_cmd.step.dependOn(&exe.step);
+    const run_step = b.step("run", "Run the app");
+    run_step.dependOn(&run_cmd.step);
 }
