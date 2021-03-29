@@ -10,10 +10,7 @@ pub fn build(b: *Builder) void {
     b.default_step.dependOn(&exe.step);
     b.installArtifact(exe);
 
-
     const run = b.step("run", "Run the demo");
-    const run_cmd = b.addCommand(".", b.env_map,
-        [][]const u8{exe.getOutputPath(), });
+    const run_cmd = exe.run();
     run.dependOn(&run_cmd.step);
-    run_cmd.step.dependOn(&exe.step);
 }
