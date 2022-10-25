@@ -24,10 +24,7 @@ pub fn main() !void {
     defer c.SDL_DestroyRenderer(renderer);
 
     const zig_bmp = @embedFile("zig.bmp");
-    const rw = c.SDL_RWFromConstMem(
-        @ptrCast(*const c_void, &zig_bmp[0]),
-        @intCast(c_int, zig_bmp.len),
-    ) orelse {
+    const rw = c.SDL_RWFromConstMem(zig_bmp, zig_bmp.len) orelse {
         c.SDL_Log("Unable to get RWFromConstMem: %s", c.SDL_GetError());
         return error.SDLInitializationFailed;
     };
