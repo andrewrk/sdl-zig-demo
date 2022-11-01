@@ -46,7 +46,7 @@ pub fn main() !void {
     while (!quit) {
         var event: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&event) != 0) {
-            switch (event.@"type") {
+            switch (event.type) {
                 c.SDL_QUIT => {
                     quit = true;
                 },
