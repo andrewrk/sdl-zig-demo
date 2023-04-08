@@ -1,9 +1,12 @@
-const Builder = @import("std").build.Builder;
+const Build = @import("std").Build;
 
-pub fn build(b: *Builder) void {
-    const mode = b.standardReleaseOptions();
-    const exe = b.addExecutable("sdl-zig-demo", "src/main.zig");
-    exe.setBuildMode(mode);
+pub fn build(b: *Build) void {
+    const mode = b.standardOptimizeOption(.{});
+    const exe = b.addExecutable(.{
+        .name = "sdl-zig-demo",
+        .root_source_file = .{ .path = "src/main.zig" },
+        .optimize = mode,
+    });
     exe.linkSystemLibrary("SDL2");
     exe.linkSystemLibrary("c");
 
