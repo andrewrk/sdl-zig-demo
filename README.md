@@ -2,7 +2,7 @@
 
 Here's a basic window with SDL2 in Zig.
 
-![screenshot](screenshot.png)
+![screenshot](screenshot1.png)
 
 ## How to build and run it
 
